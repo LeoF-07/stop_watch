@@ -4,6 +4,8 @@ import 'dart:async';
 
 import 'package:stop_watch/records.dart';
 
+import 'circle_painter.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -17,7 +19,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        //colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         scaffoldBackgroundColor: Colors.black
       ),
       home: const MyHomePage(title: 'Stop Watch'),
@@ -117,45 +120,121 @@ class _MyHomePageState extends State<MyHomePage> {
     int minuti = (this.secondi / 60).toInt();
     int secondi = this.secondi - minuti * 60;
 
-    TextStyle textStyle = TextStyle(color: Colors.white);
+    TextStyle textStyle = TextStyle(color: Colors.white, fontSize: 70);
+
+
+    ButtonStyle stylePrimaryButton = !started && !paused ?
+      ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+        padding: EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ) : (!started ?
+        ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          padding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ) :
+        ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          padding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        )
+      );
+
+    ButtonStyle styleSecondaryButton = !paused ?
+    ElevatedButton.styleFrom(
+      backgroundColor: Colors.blue,
+      padding: EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 16,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ) :
+    ElevatedButton.styleFrom(
+      backgroundColor: Colors.yellow,
+      padding: EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 16,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    );
+
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        //backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.black,
+        centerTitle: true,
+        title: Text(widget.title, style: TextStyle(color: Colors.white))
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Text("${minuti < 10 ? "0$minuti" : minuti}:${secondi < 10 ? "0$secondi" : secondi}", style: textStyle),
-            ),
-            Records(key: recordsStateKey),
-            Padding(
-              padding: EdgeInsets.only(bottom: 40),
-               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: !started && !paused ? start : (!started ? reset : stop),
-                    child: Text(!started && !paused ? "Start" : (!started ? "Reset" : "Stop"), style: TextStyle(color: Colors.black)),
-                  ),
-                  started ? ElevatedButton(
-                    onPressed: !paused ? pause : resume,
-                    child: Text(!paused ? "Pause" : "Resume", style: TextStyle(color: Colors.black)),
-                  ) : SizedBox(width: 0, height: 0)
-                ],
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: 40),
+                child: CustomPaint(
+                  size: Size(100, 100),
+                  painter: CirclePainter(secondi, paused),
+                )
               )
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(bottom: 20, top: 200),
+                  child: Text("${minuti < 10 ? "0$minuti" : minuti} : ${secondi < 10 ? "0$secondi" : secondi}", style: textStyle),),
+                Records(key: recordsStateKey),
+              ]
+            ),
+            Positioned(
+                right: 60,
+                bottom: 100,
+                child: Padding(
+                    padding: EdgeInsets.only(top: 0),
+                    child: Row(
+                      children: [
+                        started ? Padding(
+                            padding: EdgeInsets.only(right: 10),
+                            child: ElevatedButton(
+                              onPressed: !paused ? pause : resume,
+                              style: styleSecondaryButton,
+                              child: Text(!paused ? "Pause" : "Resume", style: TextStyle(color: Colors.black)),
+                            )
+                        ) : SizedBox(width: 0, height: 0),
+                        ElevatedButton(
+                          onPressed: !started && !paused ? start : (!started ? reset : stop),
+                          style: stylePrimaryButton,
+                          child: Text(!started && !paused ? "Start" : (!started ? "Reset" : "Stop"), style: TextStyle(color: Colors.black)),
+                        ),
+                      ],
+                    )
+                )
             )
-          ],
+          ]
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
